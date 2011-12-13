@@ -3,5 +3,5 @@ python-mpd
 psmove (https://github.com/thp/psmoveapi)
 
 features:
-increase/decrease volume (set MPD_HOST in your shell)
-toggle playback (set host/port/password in settings)
+increase(blue)/decrease(green) volume (set MPD_HOST in your shell)
+toggle(red) playback (set host/port/password in settings)

@@ -1,0 +1,12 @@
+[Login]
+hostname: localhost
+port: 6600
+password: 1234
+
+[ANGLE]
+volume_down_min: -4000
+volume_down_max: -800
+volume_up_min: 800
+volume_up_max: 4000
+toggle_min: -700
+toggle_max: 700
