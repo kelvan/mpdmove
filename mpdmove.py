@@ -25,7 +25,11 @@ ANGLE_TOGGLE = (config.getint('ANGLE', 'toggle_min'), config.getint('ANGLE', 'to
 ANGLE_DOWN = (config.getint('ANGLE', 'volume_down_min'), config.getint('ANGLE', 'volume_down_max'))
 
 ANGLE = (ANGLE_TOGGLE, ANGLE_DOWN, ANGLE_UP)
+BTN_MOVE = 524288
+
 last_trigger = 0
+last_button = 0
+gesture = []
 last_rumble = datetime.now()
 
 TOGGLE, DOWN, UP = range(3)
@@ -89,14 +93,44 @@ def toggle():
         print "pause"
         mpc.pause()
 
+def check_rise(lst):
+    return reduce(lambda x,y: x+y, lst)
+        
+
 def handle_trigger():
     react_bias(toggle, volume_down, volume_up)
+
+def handle_gesture(gest):
+    if len(gest) < 3:
+        print "gesture too short"
+        return
+    g = map(lambda x: x[0], gest[1:])
+    rise = check_rise(g)
+    if rise > 0:
+        # left
+        print "previous"
+        mpc.previous()
+    elif rise < 0:
+        # right
+        print "next"
+        mpc.next()
+        
 
 try:
     while True:
         if move.poll():
             if bool(move.get_trigger()) and not bool(last_trigger):
                 handle_trigger()
+            if move.get_buttons() == BTN_MOVE:
+                if last_button == 0:
+                    last_button = BTN_MOVE
+                
+                last_button = BTN_MOVE
+                gesture.append((move.ax, move.ay, move.az))
+            elif last_button == BTN_MOVE and move.get_buttons() == 0:
+                last_button = 0
+                handle_gesture(gesture)
+                gesture = []
             postition_leds()
             last_trigger = move.get_trigger()
 
@@ -105,6 +139,6 @@ try:
             if dt_rumble.total_seconds() > .3:
                 move.set_rumble(0)
             move.update_leds()
-        time.sleep(.1)
+        time.sleep(.05)
 except KeyboardInterrupt:
     sys.exit()
