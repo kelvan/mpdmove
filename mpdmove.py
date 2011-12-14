@@ -101,7 +101,7 @@ def handle_trigger():
     react_bias(toggle, volume_down, volume_up)
 
 def handle_gesture(gest):
-    if len(gest) < 3:
+    if len(gest) < 5:
         print "gesture too short"
         return
     g = map(lambda x: x[0], gest[1:])
@@ -121,17 +121,18 @@ try:
         if move.poll():
             if bool(move.get_trigger()) and not bool(last_trigger):
                 handle_trigger()
+            postition_leds()
             if move.get_buttons() == BTN_MOVE:
                 if last_button == 0:
                     last_button = BTN_MOVE
                 
                 last_button = BTN_MOVE
                 gesture.append((move.ax, move.ay, move.az))
+                move.set_leds(255,255,0)
             elif last_button == BTN_MOVE and move.get_buttons() == 0:
                 last_button = 0
                 handle_gesture(gesture)
                 gesture = []
-            postition_leds()
             last_trigger = move.get_trigger()
 
             #disable rumble after 0.3 seconds
