@@ -16,7 +16,8 @@ PASSWD = config.get('Login', 'password')
 move = psmove.PSMove()
 mpc = mpd.MPDClient()
 mpc.connect(HOST, PORT)
-mpc.password(PASSWD)
+if PASSWD:
+    mpc.password(PASSWD)
 
 ANGLE_DOWN = (config.getint('ANGLE', 'volume_down_min'), config.getint('ANGLE', 'volume_down_max'))
 ANGLE_UP = (config.getint('ANGLE', 'volume_up_min'), config.getint('ANGLE', 'volume_up_max'))
@@ -86,16 +87,18 @@ def volume_down():
         subprocess.call(['mpc', 'volume', '-5'], stdout=subprocess.PIPE)
 
 def toggle():
-    if mpc.status()['state'] == 'pause' or mpc.status()['state'] == 'stop':
-        print "play"
-        mpc.play()
-    else:
-        print "pause"
-        mpc.pause()
+    try:
+        if mpc.status()['state'] == 'pause' or mpc.status()['state'] == 'stop':
+            print "play"
+            mpc.play()
+        else:
+            print "pause"
+            mpc.pause()
+    except mpd.ConnectionError as e:
+        print e.message
 
 def check_rise(lst):
     return reduce(lambda x,y: x+y, lst)
-        
 
 def handle_trigger():
     react_bias(toggle, volume_down, volume_up)
