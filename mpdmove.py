@@ -101,7 +101,10 @@ def check_rise(lst):
     return reduce(lambda x,y: x+y, lst)
 
 def handle_trigger():
-    react_bias(toggle, volume_down, volume_up)
+    try:
+        react_bias(toggle, volume_down, volume_up)
+    except mpd.ConnectionError as e:
+        print e.message
 
 def handle_gesture(gest):
     if len(gest) < 5:
