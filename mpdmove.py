@@ -1,10 +1,12 @@
 import psmove
 import sys
+import os
 import mpd
 import subprocess
 from datetime import datetime, timedelta
 import time
 from ConfigParser import SafeConfigParser
+from socket import error as sockerror
 
 config = SafeConfigParser()
 config.read('mpdmove.conf')
@@ -69,22 +71,32 @@ def react_bias(horizontal=None, down=None, up=None):
         horizontal()
 
 def volume_up():
-    if mpc.status()['volume'] == '100':
-        move.set_rumble(150)
-        global last_rumble
-        last_rumble = datetime.now()
-    else:
-        print "volume up by 5"
-        subprocess.call(['mpc', 'volume', '+5'], stdout=subprocess.PIPE)
+    try:
+        if mpc.status()['volume'] == '100':
+            move.set_rumble(150)
+            global last_rumble
+            last_rumble = datetime.now()
+        else:
+            print "volume up by 5"
+            subprocess.call(['mpc', 'volume', '+5'], stdout=subprocess.PIPE)
+    except sockerror as e:
+        print e.message
+    except mpd.ConnectionError as e:
+        print e.message
 
 def volume_down():
-    if mpc.status()['volume'] == '0':
-        move.set_rumble(150)
-        global last_rumble
-        last_rumble = datetime.now()
-    else:
-        print "volume down by 5"
-        subprocess.call(['mpc', 'volume', '-5'], stdout=subprocess.PIPE)
+    try:
+        if mpc.status()['volume'] == '0':
+            move.set_rumble(150)
+            global last_rumble
+            last_rumble = datetime.now()
+        else:
+            print "volume down by 5"
+            subprocess.call(['mpc', 'volume', '-5'], stdout=subprocess.PIPE)
+    except sockerror as e:
+        print e.message
+    except mpd.ConnectionError as e:
+        print e.message
 
 def toggle():
     try:
@@ -94,6 +106,8 @@ def toggle():
         else:
             print "pause"
             mpc.pause()
+    except sockerror as e:
+        print e.message
     except mpd.ConnectionError as e:
         print e.message
 
@@ -103,6 +117,8 @@ def check_rise(lst):
 def handle_trigger():
     try:
         react_bias(toggle, volume_down, volume_up)
+    except sockerror as e:
+        print e.message
     except mpd.ConnectionError as e:
         print e.message
 
@@ -112,14 +128,20 @@ def handle_gesture(gest):
         return
     g = map(lambda x: x[0], gest[1:])
     rise = check_rise(g)
-    if rise > 0:
-        # left
-        print "previous"
-        mpc.previous()
-    elif rise < 0:
-        # right
-        print "next"
-        mpc.next()
+    
+    try:
+        if rise > 0:
+            # left
+            print "previous"
+            mpc.previous()
+        elif rise < 0:
+            # right
+            print "next"
+            mpc.next()
+    except sockerror as e:
+        print e.message
+    except mpd.ConnectionError as e:
+        print e.message
         
 
 try:
@@ -148,4 +170,4 @@ try:
             move.update_leds()
         time.sleep(.05)
 except KeyboardInterrupt:
-    sys.exit()
+    print "quit mpdmove"
