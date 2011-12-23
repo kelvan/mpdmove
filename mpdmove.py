@@ -15,11 +15,17 @@ PORT = config.getint('Login', 'port')
 HOST = config.get('Login', 'hostname')
 PASSWD = config.get('Login', 'password')
 
+def connect_mpd():
+    global mpc
+    mpc = mpd.MPDClient()
+    mpc.connect(HOST, PORT)
+    if PASSWD:
+        mpc.password(PASSWD)
+
+    return mpc
+
+mpc = connect_mpd()
 move = psmove.PSMove()
-mpc = mpd.MPDClient()
-mpc.connect(HOST, PORT)
-if PASSWD:
-    mpc.password(PASSWD)
 
 ANGLE_DOWN = (config.getint('ANGLE', 'volume_down_min'), config.getint('ANGLE', 'volume_down_max'))
 ANGLE_UP = (config.getint('ANGLE', 'volume_up_min'), config.getint('ANGLE', 'volume_up_max'))
@@ -81,8 +87,10 @@ def volume_up():
             subprocess.call(['mpc', 'volume', '+5'], stdout=subprocess.PIPE)
     except sockerror as e:
         print e.message
+        connect_mpd()
     except mpd.ConnectionError as e:
         print e.message
+        connect_mpd()
 
 def volume_down():
     try:
@@ -95,8 +103,10 @@ def volume_down():
             subprocess.call(['mpc', 'volume', '-5'], stdout=subprocess.PIPE)
     except sockerror as e:
         print e.message
+        connect_mpd()
     except mpd.ConnectionError as e:
         print e.message
+        connect_mpd()
 
 def toggle():
     try:
@@ -108,8 +118,10 @@ def toggle():
             mpc.pause()
     except sockerror as e:
         print e.message
+        connect_mpd()
     except mpd.ConnectionError as e:
         print e.message
+        connect_mpd()
 
 def check_rise(lst):
     return reduce(lambda x,y: x+y, lst)
@@ -119,8 +131,10 @@ def handle_trigger():
         react_bias(toggle, volume_down, volume_up)
     except sockerror as e:
         print e.message
+        connect_mpd()
     except mpd.ConnectionError as e:
         print e.message
+        connect_mpd()
 
 def handle_gesture(gest):
     if len(gest) < 5:
@@ -140,8 +154,10 @@ def handle_gesture(gest):
             mpc.next()
     except sockerror as e:
         print e.message
+        connect_mpd()
     except mpd.ConnectionError as e:
         print e.message
+        connect_mpd()
         
 
 try:
