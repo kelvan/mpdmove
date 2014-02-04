@@ -8,3 +8,6 @@ toggle(red) playback (set host/port/password in settings)
 make gesture by pressing move button (yellow)
 left for previous song
 right for next song
+
+see also:
+http://kelvan.ist-total.org/python/mpdmove
